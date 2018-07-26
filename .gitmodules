@@ -1,0 +1,3 @@
+[submodule "vagrant-hadoop-hive-spark"]
+	path = vagrant-hadoop-hive-spark
+	url = https://github.com/martinprobson/vagrant-hadoop-hive-spark
