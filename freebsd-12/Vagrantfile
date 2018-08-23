@@ -1,0 +1,30 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "freebsd/FreeBSD-12.0-CURRENT"
+  config.vm.network "private_network", ip: "192.168.50.4"
+  config.ssh.shell = "sh"
+  config.vm.base_mac = "080027D14C66"
+  config.vm.synced_folder ".", "/vagrant", type: "rsync"
+
+  config.vm.provider :virtualbox do |vb|
+    vb.memory = 4096
+    vb.cpus = 2
+    vb.customize ["modifyvm", :id, "--hwvirtex", "on"]
+    vb.customize ["modifyvm", :id, "--audio", "none"]
+    vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+    vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+  end
+
+  config.vm.provision :shell do |s|
+    ssh_pub_key = File.readlines("#{Dir.home}/.ssh/id_rsa.pub").first.strip
+    s.inline = <<-SHELL
+      VAGRANT_AUTH_KEYS=/home/vagrant/.ssh/authorized_keys 
+      [ ! -e $VAGRANT_AUTH_KEYS ] && touch $VAGRANT_AUTH_KEYS
+      echo #{ssh_pub_key} >> $VAGRANT_AUTH_KEYS
+      pkg install -y py27-pip gtar
+      ln -s /usr/local/bin/python2.7 /usr/bin/python
+    SHELL
+  end
+end
