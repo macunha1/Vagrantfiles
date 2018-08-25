@@ -1,0 +1,24 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "macunha1/clearlinux"
+  config.vm.network "private_network", ip: "192.168.50.4"
+
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 2048
+    v.cpus = 2
+  end
+
+  config.vm.provision "shell" do |s|
+    ssh_pub_key = File.readlines("#{Dir.home}/.ssh/id_rsa.pub").first.strip
+    s.inline = <<-SHELL
+      useradd vagrant
+      VAGRANT_AUTH_KEYS=/home/vagrant/.ssh/authorized_keys
+      echo "Subsystem sftp internal-sftp" >> /etc/ssh/sshd_config
+      mkdir $(dirname $VAGRANT_AUTH_KEYS)
+      [ ! -e $VAGRANT_AUTH_KEYS ] && touch $VAGRANT_AUTH_KEYS
+      echo #{ssh_pub_key} >> $VAGRANT_AUTH_KEYS
+    SHELL
+  end
+end
