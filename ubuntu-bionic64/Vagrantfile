@@ -18,7 +18,6 @@ Vagrant.configure("2") do |config|
       echo #{ssh_pub_key} >> $VAGRANT_AUTH_KEYS
 
       sudo apt-get update
-      sudo apt-get install htop telnet net-tools vim
       sudo apt-get install python python-pip python-dev -y
     SHELL
   end

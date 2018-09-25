@@ -23,6 +23,7 @@ Vagrant.configure("2") do |config|
       VAGRANT_AUTH_KEYS=/home/vagrant/.ssh/authorized_keys 
       [ ! -e $VAGRANT_AUTH_KEYS ] && touch $VAGRANT_AUTH_KEYS
       echo #{ssh_pub_key} >> $VAGRANT_AUTH_KEYS
+
       pkg install -y py27-pip gtar
       ln -s /usr/local/bin/python2.7 /usr/bin/python
     SHELL
