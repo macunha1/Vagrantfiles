@@ -19,7 +19,6 @@ Vagrant.configure("2") do |config|
 
       sudo printf "LC_ALL=\"en_US.utf-8\"\n" >> /etc/locale.conf
       sudo dnf install python python-devel -y -q
-      sudo dnf upgrade vim-minimal -y -q
     SHELL
   end
 end

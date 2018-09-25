@@ -19,7 +19,6 @@ Vagrant.configure("2") do |config|
 
       sudo printf "LC_ALL=\"en_US.utf-8\"\n" >> /etc/locale.conf
       sudo yum install epel-release -y -q
-      sudo yum install net-tools htop vim telnet -y -q
       sudo yum upgrade python python-devel -y -q
       sudo yum install python-pip -y -q
     SHELL
