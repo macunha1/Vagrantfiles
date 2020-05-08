@@ -1,7 +1,1 @@
-*/.vagrant
-*/*
-!*/Vagrantfile
-!.gitmodules
-!.editorconfig
-!LICENSE
-!README.md
+**/.vagrant
