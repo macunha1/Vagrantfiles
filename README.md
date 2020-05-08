@@ -3,7 +3,7 @@
 Combo with a bunch of Vagrantfiles, to setup local and/or ephemeral Virtual machines.
 
 The main motivation was to test [Ansible](https://www.ansible.com/). So, most of the Vagrantfiles carries `python` installed by default.
-Also, they have a copy of the host machine default public RSA key, which allows easy connection with `ssh vagrant@$IP` which facilitates Ansible inventory setup
+Also, they have a copy of the host machine default public RSA key, which allows easy connection with `ssh vagrant@$IP` facilitating Ansible inventory setup
 
 ## Getting Started
 
@@ -21,7 +21,8 @@ Then, you're setted up!
 
 To download all base vagrant boxes just run the following (assuming that you're on a POSIX/Unix/Linux-based operating system)
 ```shell
-cat */Vagrantfile | awk '/config\.vm\.box/{print $NF}' | xargs -P 4 -I{} vagrant box add {} --provider virtualbox
+find . -name Vagrantfile -type f -exec awk '/config\.vm\.box/{print $NF}' {} + | \
+    xargs -P 4 -I{} vagrant box add {} --provider virtualbox
 ```
 
 You can configure your VM default values for vCPUs and RAM with:
