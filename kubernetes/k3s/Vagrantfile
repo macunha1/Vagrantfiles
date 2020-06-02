@@ -4,10 +4,11 @@
 require './plugins/vagrant-reboot/vagrant-provision-reboot-plugin'
 require './plugins/local_command'
 
+ipv4_address = ENV["K3S_IPV4_ADDRESS"] || "192.168.50.4"
+
 Vagrant.configure("2") do |config|
-    # It would be nice to have a Fedora CoreOS reliable box
     config.vm.box = "fedora/31-cloud-base"
-    config.vm.network "private_network", ip: "192.168.50.4"
+    config.vm.network "private_network", ip: ipv4_address
 
     config.vm.provider "virtualbox" do |v|
         v.memory = 1024 * Integer(ENV["VAGRANT_RAM_GB"] || 1)
@@ -50,18 +51,22 @@ Vagrant.configure("2") do |config|
             k3s kubectl get node
 
             export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-            grep -q KUBECONFIG $HOME/.profile || (echo "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml" >> $HOME/.profile)
+
+            ([[ -e $HOME/.profile ]] && grep -q KUBECONFIG $HOME/.profile) || {
+                echo "export KUBECONFIG=${KUBECONFIG}" >> $HOME/.profile
+            }
+
+            cat $KUBECONFIG | sed -e 's/default/k3s/g' -e 's/127.0.0.1/#{ipv4_address}/g' > /vagrant/k3s.yaml
+            chown vagrant: /vagrant/k3s.yaml
 
             k3s kubectl apply \
                 -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
             k3s kubectl patch storageclass local-path \
                 -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-
-            cat $KUBECONFIG | sed -e 's/default/k3s/g' -e 's/127.0.0.1/192.168.50.4/g' > /vagrant/k3s.yaml
         SHELL
     end
 
     config.vm.provision :local_shell do |sh|
-        sh.command = "scp vagrant@192.168.50.4:/vagrant/k3s.yaml ."
+        sh.command = "scp vagrant@#{ipv4_address}:/vagrant/k3s.yaml ."
     end
 end
