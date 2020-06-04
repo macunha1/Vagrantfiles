@@ -1,11 +1,14 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+vm_provider = ENV["VAGRANT_PROVIDER"] || "virtualbox"
+vm_net_ipv4_address = ENV["VAGRANT_IPV4_ADDRESS"] || "192.168.50.4"
+
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/focal64"
-  config.vm.network "private_network", ip: "192.168.50.4"
+  config.vm.network "private_network", ip: vm_net_ipv4_address
 
-  config.vm.provider "virtualbox" do |v|
+  config.vm.provider vm_provider do |v|
     v.memory = 1024*Integer(ENV["VAGRANT_RAM_GB"] || 1)
     v.cpus = Integer(ENV["VAGRANT_CPU_CORES"] || 1)
   end

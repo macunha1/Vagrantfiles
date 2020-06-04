@@ -1,17 +1,26 @@
 # Vagrantfiles
 
-Combo with a bunch of Vagrantfiles, to setup local and/or ephemeral Virtual machines.
+Combo with a bunch of Vagrantfiles, to setup local and/or ephemeral Virtual
+machines.
 
-The main motivation was to test [Ansible](https://www.ansible.com/). So, most of the Vagrantfiles carries `python` installed by default.
-Also, they have a copy of the host machine default public RSA key, which allows easy connection with `ssh vagrant@$IP` facilitating Ansible inventory setup
+The main motivation was to test [Ansible](https://www.ansible.com/). So, most
+of the Vagrantfiles carries `python` installed by default.
+Also, they have a copy of the host machine default public RSA key, which allows
+easy connection with `ssh vagrant@$IP` facilitating Ansible inventory setup
 
 ## Getting Started
 
 ### Prerequisites
 
-These Vagranfiles create boxes using VirtualBox. So, before all, you need to go [here](https://www.virtualbox.org/wiki/Downloads) to download and install VirtualBox at your machine.
+Install a VM provider supported by Vagrant, most popular is [VirtualBox](https://www.virtualbox.org/wiki/Downloads).
 
-After installing VirtualBox, the [Vagrant download](https://www.vagrantup.com/downloads.html) and installation must be done.
+For libvirt support the following plugin is necessary
+
+```bash
+vagrant plugin install vagrant-libvirt
+```
+
+Last step is (of course) [Vagrant](https://www.vagrantup.com/downloads.html).
 
 Then, you're setted up!
 
@@ -19,21 +28,28 @@ Then, you're setted up!
 
 ### Usage
 
-To download all base vagrant boxes just run the following (assuming that you're on a POSIX/Unix/Linux-based operating system)
+To download all base vagrant boxes just run the following (assuming that
+you're on a POSIX/Unix/Linux-based operating system)
+
 ```shell
-find . -name Vagrantfile -type f -exec awk '/config\.vm\.box/{print $NF}' {} + | \
-    xargs -P 4 -I{} vagrant box add {} --provider virtualbox
+find . -name Vagrantfile -type f \
+    -exec awk '/config\.vm\.box/{print $NF}' {} + | \
+    sort | uniq | \
+    xargs -P 4 -I{} vagrant box add {} \
+        --provider "${VAGRANT_PROVIDER:-virtualbox}"
 ```
 
 You can configure your VM default values for vCPUs and RAM with:
 
 ```shell
 export VAGRANT_CPU_CORE=2 # Number of vCPUs to dedicate
-
 export VAGRANT_RAM_GB=4 # Allocated RAM in GB
+export VAGRANT_PROVIDER=libvirt # alternative VM provider
+export VAGRANT_IPV4_ADDRESS=192.168.50.111 # default Ipv4 address for VM
 ```
 
-Set those values in your `$HOME/.profile` or `${HOME}/${SHELL}rc` (as you wish) to store the configuration.
+Set those values in your `$HOME/.profile` or `${HOME}/${SHELL}rc` (as you wish)
+to store the configuration.
 
 After downloading base boxes, you can run your desired operating system with
 
@@ -41,13 +57,13 @@ After downloading base boxes, you can run your desired operating system with
 cd $DESIRED_OPERATING_SYSTEM && vagrant up
 ```
 
-## Built With
+## Contribute
 
-* [Oracle VirtualBox](https://https://www.virtualbox.org/) - Oracle OpenSource virtualization product
-* [HashiCorp Vagrant](https://www.vagrantup.com/) - Wrapper for virtualization
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
-## Authors
+- Feel free to fill [an issue with feature request(s)](https://github.com/macunha1/Vagrantfiles/issues),
+or to send me a Pull request, I will be happy to collaborate.
 
-* [**Matheus Cunha** ](https://github.com/macunha1)
+- If the code don't work, or if you found some bug during the execution, let me know.
 
-See also the list of [contributors](https://github.com/macunha1/Vagrantfiles/contributors) who participated in this project.
+[![](https://sourcerer.io/fame/macunha1/macunha1/Vagrantfiles/images/0)](https://sourcerer.io/fame/macunha1/macunha1/Vagrantfiles/links/0)[![](https://sourcerer.io/fame/macunha1/macunha1/Vagrantfiles/images/1)](https://sourcerer.io/fame/macunha1/macunha1/Vagrantfiles/links/1)[![](https://sourcerer.io/fame/macunha1/macunha1/Vagrantfiles/images/2)](https://sourcerer.io/fame/macunha1/macunha1/Vagrantfiles/links/2)[![](https://sourcerer.io/fame/macunha1/macunha1/Vagrantfiles/images/3)](https://sourcerer.io/fame/macunha1/macunha1/Vagrantfiles/links/3)[![](https://sourcerer.io/fame/macunha1/macunha1/Vagrantfiles/images/4)](https://sourcerer.io/fame/macunha1/macunha1/Vagrantfiles/links/4)[![](https://sourcerer.io/fame/macunha1/macunha1/Vagrantfiles/images/5)](https://sourcerer.io/fame/macunha1/macunha1/Vagrantfiles/links/5)[![](https://sourcerer.io/fame/macunha1/macunha1/Vagrantfiles/images/6)](https://sourcerer.io/fame/macunha1/macunha1/Vagrantfiles/links/6)[![](https://sourcerer.io/fame/macunha1/macunha1/Vagrantfiles/images/7)](https://sourcerer.io/fame/macunha1/macunha1/Vagrantfiles/links/7)

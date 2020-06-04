@@ -4,69 +4,70 @@
 require './plugins/vagrant-reboot/vagrant-provision-reboot-plugin'
 require './plugins/local_command'
 
-ipv4_address = ENV["K3S_IPV4_ADDRESS"] || "192.168.50.4"
+vm_provider = ENV["VAGRANT_PROVIDER"] || "virtualbox"
+vm_net_ipv4_address = ENV["VAGRANT_IPV4_ADDRESS"] || "192.168.50.4"
 
 Vagrant.configure("2") do |config|
-    config.vm.box = "fedora/31-cloud-base"
-    config.vm.network "private_network", ip: ipv4_address
+  config.vm.box = "fedora/31-cloud-base"
+  config.vm.network "private_network", ip: vm_net_ipv4_address
 
-    config.vm.provider "virtualbox" do |v|
-        v.memory = 1024 * Integer(ENV["VAGRANT_RAM_GB"] || 1)
-        v.cpus = Integer(ENV["VAGRANT_CPU_CORES"] || 1)
-    end
+  config.vm.provider vm_provider do |v|
+    v.memory = 1024 * Integer(ENV["VAGRANT_RAM_GB"] || 1)
+    v.cpus = Integer(ENV["VAGRANT_CPU_CORES"] || 1)
+  end
 
-    config.trigger.before :provision do |trigger|
-        trigger.run_remote = {
-            # Ref https://bugzilla.redhat.com/show_bug.cgi?id=1757078
-            inline: <<-SHELL
-                 sudo grubby --update-kernel=ALL \
-                     --args="systemd.unified_cgroup_hierarchy=0"
-            SHELL
-        }
-    end
+  config.trigger.before :provision do |trigger|
+    trigger.run_remote = {
+      # Ref https://bugzilla.redhat.com/show_bug.cgi?id=1757078
+      inline: <<-SHELL
+         sudo grubby --update-kernel=ALL \
+             --args="systemd.unified_cgroup_hierarchy=0"
+      SHELL
+    }
+  end
 
-    config.vm.provision "shell" do |s|
-        ssh_pub_key = File.readlines("#{Dir.home}/.ssh/id_rsa.pub").first.strip
-        s.inline = <<-SHELL
-            VAGRANT_AUTH_KEYS=/home/vagrant/.ssh/authorized_keys
-            [ ! -e $VAGRANT_AUTH_KEYS ] && touch $VAGRANT_AUTH_KEYS
-            echo #{ssh_pub_key} >> $VAGRANT_AUTH_KEYS
+  config.vm.provision "shell" do |s|
+    ssh_pub_key = File.readlines("#{Dir.home}/.ssh/id_rsa.pub").first.strip
+    s.inline = <<-SHELL
+      VAGRANT_AUTH_KEYS=/home/vagrant/.ssh/authorized_keys
+      [ ! -e $VAGRANT_AUTH_KEYS ] && touch $VAGRANT_AUTH_KEYS
+      echo #{ssh_pub_key} >> $VAGRANT_AUTH_KEYS
 
-            sudo printf "LC_ALL=\"en_US.utf-8\"\n" >> /etc/locale.conf
-            sudo dnf install dnf-plugins-core -y -q
+      sudo printf "LC_ALL=\"en_US.utf-8\"\n" >> /etc/locale.conf
+      sudo dnf install dnf-plugins-core -y -q
 
-            sudo dnf install -y container-selinux selinux-policy-base
-            sudo rpm -i https://rpm.rancher.io/k3s-selinux-0.1.1-rc1.el7.noarch.rpm
+      sudo dnf install -y container-selinux selinux-policy-base
+      sudo rpm -i https://rpm.rancher.io/k3s-selinux-0.1.1-rc1.el7.noarch.rpm
 
-            printf "Installing K3s ..."
-            curl -sfL https://get.k3s.io | sudo sh -
-        SHELL
-    end
+      printf "Installing K3s ..."
+      curl -sfL https://get.k3s.io | sudo sh -
+    SHELL
+  end
 
-    # Triggers a VM reload, to insure the Kernel supports Cgroups v1
-    config.vm.provision :unix_reboot
+  # Triggers a VM reload, to insure the Kernel supports Cgroups v1
+  config.vm.provision :unix_reboot
 
-    config.vm.provision "shell" do |s|
-        s.inline = <<-SHELL
-            k3s kubectl get node
+  config.vm.provision "shell" do |s|
+    s.inline = <<-SHELL
+      k3s kubectl get node
 
-            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+      export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
-            ([[ -e $HOME/.profile ]] && grep -q KUBECONFIG $HOME/.profile) || {
-                echo "export KUBECONFIG=${KUBECONFIG}" >> $HOME/.profile
-            }
+      ([[ -e $HOME/.profile ]] && grep -q KUBECONFIG $HOME/.profile) || {
+          echo "export KUBECONFIG=${KUBECONFIG}" >> $HOME/.profile
+      }
 
-            cat $KUBECONFIG | sed -e 's/default/k3s/g' -e 's/127.0.0.1/#{ipv4_address}/g' > /vagrant/k3s.yaml
-            chown vagrant: /vagrant/k3s.yaml
+      cat $KUBECONFIG | sed -e 's/default/k3s/g' -e 's/127.0.0.1/#{ipv4_address}/g' > /vagrant/k3s.yaml
+      chown vagrant: /vagrant/k3s.yaml
 
-            k3s kubectl apply \
-                -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
-            k3s kubectl patch storageclass local-path \
-                -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-        SHELL
-    end
+      k3s kubectl apply \
+          -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+      k3s kubectl patch storageclass local-path \
+          -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+    SHELL
+  end
 
-    config.vm.provision :local_shell do |sh|
-        sh.command = "scp vagrant@#{ipv4_address}:/vagrant/k3s.yaml ."
-    end
+  config.vm.provision :local_shell do |sh|
+    sh.command = "scp vagrant@#{ipv4_address}:/vagrant/k3s.yaml ."
+  end
 end
