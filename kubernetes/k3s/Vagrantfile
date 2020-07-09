@@ -44,7 +44,7 @@ Vagrant.configure("2") do |config|
     SHELL
   end
 
-  # Triggers a VM reload, to insure the Kernel supports Cgroups v1
+  # Triggers a VM reload, to ensure the Kernel supports Cgroups v1
   config.vm.provision :unix_reboot
 
   config.vm.provision "shell" do |s|
@@ -57,7 +57,9 @@ Vagrant.configure("2") do |config|
           echo "export KUBECONFIG=${KUBECONFIG}" >> $HOME/.profile
       }
 
-      cat $KUBECONFIG | sed -e 's/default/k3s/g' -e 's/127.0.0.1/#{ipv4_address}/g' > /vagrant/k3s.yaml
+      cat $KUBECONFIG | \
+        sed -e 's/default/k3s/g' -e 's/127.0.0.1/#{vm_net_ipv4_address}/g' \
+        > /vagrant/k3s.yaml
       chown vagrant: /vagrant/k3s.yaml
 
       k3s kubectl apply \
@@ -68,6 +70,6 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provision :local_shell do |sh|
-    sh.command = "scp vagrant@#{ipv4_address}:/vagrant/k3s.yaml ."
+    sh.command = "scp vagrant@#{vm_net_ipv4_address}:/vagrant/k3s.yaml ."
   end
 end
