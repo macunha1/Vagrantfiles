@@ -1,4 +1,0 @@
-[submodule "vagrant-reboot-plugin"]
-	branch = master
-	url = https://github.com/exratione/vagrant-provision-reboot.git
-	path = kubernetes/k3s/plugins/vagrant-reboot
