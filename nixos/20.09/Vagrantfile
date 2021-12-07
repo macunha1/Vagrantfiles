@@ -28,7 +28,7 @@ Vagrant.configure("2") do |config|
       sudo nix-channel --add https://nixos.org/channels/nixpkgs-unstable
       sudo nix-channel --update
 
-      sudo nix-env -i vim git
+      sudo nix-env -iA nixos.vim nixos.git
     SHELL
   end
 end
